@@ -1,0 +1,3 @@
+blueocean:1.25.3 
+docker-workflow:1.28 
+configuration-as-code:1734.vb_5725b_3dc951
