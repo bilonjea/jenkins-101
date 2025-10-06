@@ -1,0 +1,65 @@
+pipeline {
+  agent none
+  options { skipDefaultCheckout(true) }
+
+  stages {
+    stage('Checkout') {
+      agent { label 'light' } // petit agent générique
+      steps {
+        checkout scm
+        stash name: 'src', includes: '**/*'
+      }
+    }
+
+    stage('Build Java') {
+      agent { label 'java21' }
+      steps {
+        unstash 'src'
+        dir('backend') {
+          sh 'mvn -B -DskipTests package'
+          stash name: 'jar', includes: 'target/*.jar'
+        }
+      }
+    }
+
+    stage('Build Angular') {
+      agent { label 'node' }
+      steps {
+        unstash 'src'
+        dir('frontend') {
+          sh 'npm ci'
+          sh 'npx ng build --configuration production'
+          stash name: 'fe', includes: 'dist/**'
+        }
+      }
+    }
+
+    stage('Build Python') {
+      agent { label 'python' }
+      steps {
+        unstash 'src'
+        dir('py') {
+          sh 'python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt && pytest -q'
+          stash name: 'py-artifacts', includes: '.venv/**'
+        }
+      }
+    }
+
+    stage('Package / Publish') {
+      agent { label 'publishing' }
+      steps {
+        unstash 'jar'
+        unstash 'fe'
+        // Assemble, signer, publier vers Nexus/S3/Artifactory…
+        sh 'echo "Packaging… (ex: cp backend/target/*.jar build/ && cp -r frontend/dist build/ )"'
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'backend/target/*.jar, frontend/dist/**', allowEmptyArchive: true
+      junit '**/target/surefire-reports/*.xml'
+    }
+  }
+}

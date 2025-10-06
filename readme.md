@@ -67,3 +67,41 @@ docker inspect <container_id> | grep IPAddress
 ```
 docker pull devopsjourney1/myjenkinsagents:python
 ```
+## Build & push agent 
+
+# CI neutre
+```
+docker build -t registry.example.com/ci-toolbox:latest ./ci-toolbox
+docker push registry.example.com/ci-toolbox:latest
+```
+registry.example.com can be change by the  placeholder of your images registry (ex: GitLab Registry, GHCR, ECR…)
+
+You can see here [`build-docker-images.bash`](./build-docker-images.bash) where i push my images agents in my hub.docker.com
+
+
+## 🔁 Maintenance Jenkins (reset & restore)
+
+Scripts :
+- [`reset-jenkins.sh`](./scripts/reset-jenkins.sh) — sauvegarde `jenkins-data` ➜ recrée un **home propre** ➜ rebuild & restart
+- [`restore-jenkins.sh`](./scripts/restore-jenkins.sh) — restaure un backup `jenkins_home_backup_*.tgz` dans `jenkins-data`
+
+### Prérequis
+- Docker + Docker Compose (v2 ou v1)
+- Les scripts sont exécutables :
+  ```bash
+  chmod +x ./scripts/reset-jenkins.sh ./scripts/restore-jenkins.sh
+
+
+# Rendre les scripts exécutables et enregistrer le bit exec dans Git
+chmod +x scripts/reset-jenkins.sh scripts/restore-jenkins.sh
+git update-index --chmod=+x scripts/reset-jenkins.sh scripts/restore-jenkins.sh
+
+# Après ajout de .gitattributes, normaliser les fins de ligne (une fois)
+git rm --cached -r .
+git add .
+git commit -m "Normalize line endings per .gitattributes"
+
+
+
+
+

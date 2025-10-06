@@ -1,0 +1,12 @@
+.# Backups Jenkins (créés par reset-jenkins.sh)
+backups/
+
+# (optionnel) si tu as un bind mount local pour Jenkins
+jenkins_home/
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,30 @@
+jenkins:
+  systemMessage: "Jenkins as Code — provisionné automatiquement ✅"
+  numExecutors: 0
+  markupFormatter: "plainText"
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-changeMe!}"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "${JENKINS_URL:-http://localhost:8080/}"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "dockerhub"
+              description: "Docker Hub (push depuis pipelines)"
+              username: "${DOCKERHUB_USER}"
+              password: "${DOCKERHUB_PAT}"

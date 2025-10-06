@@ -1,0 +1,26 @@
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile   # ton Dockerfile contrôleur (avec plugins.txt)
+    container_name: jenkins
+    ports:
+      - "8080:8080"     # UI
+      - "50000:50000"   # Agents JNLP
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/
+      - JENKINS_ADMIN_ID=admin
+      - JENKINS_ADMIN_PASSWORD=changeMe!
+      - JENKINS_URL=http://localhost:8080/
+      - DOCKERHUB_USER=ton_user
+      - DOCKERHUB_PAT=ton_token
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./casc/:/var/jenkins_home/casc_configs/:ro
+      - ./casc_jobs/:/var/jenkins_home/casc_jobs/:ro
+      - /var/run/docker.sock:/var/run/docker.sock   # ⚠️ privilèges élevés
+    # (Option) mappe l'UID/GID pour l'accès au socket
+    # user: "1000:${DOCKER_GID}"
+
+volumes:
+  jenkins_home:
