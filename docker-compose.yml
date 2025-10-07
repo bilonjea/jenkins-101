@@ -7,13 +7,11 @@ services:
     ports:
       - "8080:8080"     # UI
       - "50000:50000"   # Agents JNLP
+    env_file: .env
     environment:
       - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/
-      - JENKINS_ADMIN_ID=admin
-      - JENKINS_ADMIN_PASSWORD=changeMe!
-      - JENKINS_URL=http://localhost:8080/
-      - DOCKERHUB_USER=ton_user
-      - DOCKERHUB_PAT=ton_token
+      - JENKINS_URL=${JENKINS_URL:-http://localhost:8080/}
+
     volumes:
       - jenkins_home:/var/jenkins_home
       - ./casc/:/var/jenkins_home/casc_configs/:ro

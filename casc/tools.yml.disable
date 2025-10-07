@@ -1,0 +1,26 @@
+# Jenkins télécharge ces versions sur les agents qui en ont besoin (si le pipeline les demande).
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "git"
+  jdk:
+    installations:
+      - name: "jdk21"
+        home: ""     # JDK fourni par l’agent/containeur (souvent vide côté JCasC)
+  maven:
+    installations:
+      - name: "maven-3.9.8"
+        properties:
+          - installSource:
+              installers:
+                - maven:
+                    id: "3.9.8"
+  nodejs:
+    installations:
+      - name: "node-20"
+        properties:
+          - installSource:
+              installers:
+                - nodeJSInstaller:
+                    id: "20.14.0"

@@ -1,0 +1,15 @@
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+        - id: "devuser1"
+          password: "${DEVUSER1_PASS}"
+        - id: "devuser2"
+          password: "${DEVUSER2_PASS}"
+        - id: "student1"
+          password: "${STUDENT1_PASS}"
+        - id: "student2"
+          password: "${STUDENT2_PASS}"

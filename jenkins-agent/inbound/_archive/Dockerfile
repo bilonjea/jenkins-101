@@ -30,7 +30,7 @@ RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/bi
 ARG NODE_MAJOR=20
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
  && apt-get update && apt-get install -y --no-install-recommends nodejs \
- && npm install -g @angular/cli \
+ && npm install -g @angular/cli@20 \
  && rm -rf /var/lib/apt/lists/*
 
 # Python tools

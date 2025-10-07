@@ -1,0 +1,168 @@
+jenkins:
+  systemMessage: "Jenkins as Code — formation"
+  numExecutors: 0            # pas de builds sur le contrôleur
+  mode: NORMAL
+  crumbIssuer: "standard"
+  remotingSecurity:
+    enabled: true
+  agentProtocols:
+    - "JNLP4-connect"
+    - "Ping"
+  disableRememberMe: false
+
+  # Authentification locale (exemple). Remplace par LDAP/OIDC si besoin.
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${ADMIN_PASSWORD}"   # injecté via secret/env
+
+  # RBAC simple : admin total pour l'utilisateur admin
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: "admins"
+            permissions:
+              - "Overall/Administer"
+            assignments:
+              - "admin"
+
+  # Définition d'un agent permanent (exemple) en mode inbound WebSocket
+  nodes:
+    - permanent:
+        name: "agent-inbound-1"
+        labelString: "docker"
+        remoteFS: "/home/jenkins"
+        numExecutors: 2
+        launcher:
+          inbound:
+            webSocket: true
+
+  # Libraries partagées (option)
+  globalLibraries:
+    libraries:
+      - name: "acme-shared"
+        defaultVersion: "main"
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                remote: "https://github.com/ORG/acme-shared.git"
+                credentialsId: "gh-pat"
+
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "git"
+  jdk:
+    installations:
+      - name: "jdk21"
+        home: ""     # JDK fourni par l’agent/containeur (souvent vide côté JCasC)
+  maven:
+    installations:
+      - name: "maven-3.9.8"
+        properties:
+          - installSource:
+              installers:
+                - maven:
+                    id: "3.9.8"
+  nodejs:
+    installations:
+      - name: "node-20"
+        properties:
+          - installSource:
+              installers:
+                - nodeJSInstaller:
+                    id: "20.14.0"
+
+credentials:
+  system:
+    domainCredentials:
+      - domain:
+          name: "global"
+          description: "Global"
+        credentials:
+          - usernamePassword:
+              id: "gh-username-password"
+              description: "GitHub basic (si besoin)"
+              username: "GITHUB_USER"
+              password: "${GH_PASSWORD}"
+          - string:
+              id: "gh-pat"
+              description: "GitHub Personal Access Token"
+              secret: "${GH_PAT}"
+          - string:
+              id: "sonar-token"
+              description: "Sonar token"
+              secret: "${SONAR_TOKEN}"
+          - basicSSHUserPrivateKey:
+              id: "agent-ssh-key"
+              username: "jenkins"
+              description: "SSH key for SSH agents"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${AGENT_SSH_PRIVATE_KEY}"
+
+unclassified:
+  location:
+    url: "http://<CONTROLLER_IP>:8080/"
+  mailer:
+    replyToAddress: "ci@example.com"
+    smtpHost: "smtp.example.com"
+    useSsl: false
+    smtpPort: "25"
+  # SonarQube/SonarCloud
+  sonarGlobalConfiguration:
+    installations:
+      - name: "sonarqube"
+        serverUrl: "https://sonarcloud.io"
+        credentialsId: "sonar-token"
+  # Slack (si plugin installé)
+  slackNotifier:
+    teamDomain: ""
+    tokenCredentialId: ""      # ex: "slack-token"
+    botUser: true
+    sendAsText: false
+
+# (Optionnel) Définir des jobs via Job DSL au démarrage
+jobs:
+  - script: >
+      multibranchPipelineJob('cargo-tms') {
+        branchSources {
+          branchSource {
+            source {
+              github {
+                id('gh-cargo')
+                repoOwner('ORG')
+                repository('cargo-tms')
+                configuredByUrl(false)
+                credentialsId('gh-pat')
+                buildForkPRHead(true)
+                buildOriginBranch(true)
+                buildOriginPRHead(true)
+              }
+            }
+            strategy {
+              defaultBranchPropertyStrategy {
+                props { }
+              }
+            }
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(10)
+          }
+        }
+        triggers {
+          periodicFolderTrigger { interval('1d') }  // rescan quotidien
+        }
+      }

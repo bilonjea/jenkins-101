@@ -1,0 +1,81 @@
+jenkins:
+  systemMessage: "Jenkins as Code — formation"
+  numExecutors: 0
+  mode: NORMAL
+  crumbIssuer: "standard"
+  remotingSecurity: { enabled: true }
+  agentProtocols: [ "JNLP4-connect", "Ping" ]
+  disableRememberMe: false
+
+  # Définition d'un agent permanent (exemple) en mode inbound WebSocket
+  nodes:
+    - permanent:
+        name: "agent-inbound-1"
+        labelString: "docker docker-1"
+        remoteFS: "/home/jenkins"
+        numExecutors: 2
+        launcher: { inbound: { webSocket: true } }
+    - permanent:
+        name: "agent-inbound-2"
+        labelString: "docker docker-2"
+        remoteFS: "/home/jenkins"
+        numExecutors: 2
+        launcher: { inbound: { webSocket: true } }
+    - permanent:
+        name: "agent-ssh-1"
+        labelString: "docker docker-3"
+        remoteFS: "/home/jenkins"
+        numExecutors: 2
+        launcher:
+          ssh:
+            host: "${IP_DU_HOST_AGENT}"     # ou hostname si résolu
+            port: "${AGENT_SSH_PORT}"       # 2222 par défaut
+            credentialsId: "agent-ssh-key"
+            sshHostKeyVerificationStrategy:
+              nonVerifyingKeyVerificationStrategy: {}  # pour tests (sinon mets une stratégie stricte)
+
+  # Libraries partagées (option)
+  # regrouper des fonctions/steps réutilisables pour tes pipelines,
+  # au lieu de dupliquer du Groovy dans chaque Jenkinsfile.
+  globalLibraries:
+    libraries:
+      - name: "acme-shared"
+        defaultVersion: "main"
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                remote: "https://github.com/bilonjea/acme-shared.git"
+                #credentialsId: "gh-pat"
+    
+unclassified:
+  location:
+    url: "${JENKINS_URL}"
+    adminAddress: "${ADMIN_EMAIL}"
+  
+  mailer:
+    smtpHost: "${SMTP_HOST}"
+    smtpPort: "${SMTP_PORT}"
+    useSsl: "${SMTP_USE_SSL}"
+    replyToAddress: "${ADMIN_EMAIL}"
+    smtpAuthUsername: "${SMTP_USER}"
+    smtpAuthPassword: "${SMTP_PASS}"
+    smtpStartTls: "${SMTP_STARTTLS}"
+  
+  #slackNotifier:
+    #teamDomain: "${SLACK_TEAM}"
+    #tokenCredentialId: "slack-token"
+    #botUser: true
+    #sendAsText: false
+
+  sonarGlobalConfiguration:
+    installations:
+      - name: "SonarCloud"
+        serverUrl: "${SONAR_URL}"
+        credentialsId: "sonar-token"
+
+jobs:
+# Active la/les définitions Job DSL
+  - file: /var/jenkins_home/casc_jobs/cargo-tms.groovy
+  - file: /var/jenkins_home/casc_jobs/mbp_github.groovy
+# - file: /var/jenkins_home/casc_jobs/mbp_gitlab.groovy   # décommente si GitLab

@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  agent-ssh:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # clef publique autorisée pour le user "jenkins" dans le conteneur
+      JENKINS_AGENT_SSH_PUBKEY: ${JENKINS_AGENT_SSH_PUBKEY}
+      # labels (optionnel)
+      JENKINS_AGENT_LABELS: ${JENKINS_AGENT_LABELS:-"build docker java21 maven node angular"}
+    ports:
+      # Expose le SSH de l’agent (22 dans le conteneur)
+      - "${AGENT_SSH_PORT:-2222}:22"
+    volumes:
+      # Monte le socket Docker si tes jobs doivent faire docker build/run SUR L’AGENT
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Si "permission denied" sur le socket : renseigne DOCKER_GID et décommente :
+    # user: "1000:${DOCKER_GID}"
