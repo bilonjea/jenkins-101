@@ -4,30 +4,21 @@ jenkins:
       roles:
         global:
           - name: "admins"
-            description: "Administrators"
             permissions:
               - "Overall/Administer"
-            entries:
-              - user: "${JENKINS_ADMIN_ID}"
-              - user: "bilonjea"
+
           - name: "public-view"
-            description: "Public View"
             permissions:
               - "Overall/Read"
               - "View/Read"
-            entries:
-              - user: "anonymous"
+
           - name: "viewer"
-            description: "Viewers"
             permissions:
               - "Overall/Read"
               - "View/Read"
               - "Job/Read"
-            entries:
-              - user: "student1"
-              - user: "student2"
+
           - name: "developer"
-            description: "Developers"
             permissions:
               - "Overall/Read"
               - "View/Read"
@@ -36,19 +27,38 @@ jenkins:
               - "Job/Build"
               - "Job/Cancel"
               - "Job/Workspace"
-            entries:
-              - user: "devuser1"
-              - user: "devuser2"
+
           - name: "viewer_github_org_team"
-            description: "GitHub Organization Team Viewers"
             permissions:
               - "Overall/Read"
               - "View/Read"
               - "Job/Read"
               - "Job/Discover"
-            entries:
-              - user: "bilonjea"
-              - user: "bilonjeavps"
-              - group: "ynov/masters1"
-              - group: "e-metconsulting/team1"
-  
+
+      grantedRoles:
+        global:
+          - role: "admins"
+            sids:
+              - "${JENKINS_ADMIN_ID}"
+
+          - role: "public-view"
+            sids:
+              - "anonymous"
+
+          - role: "viewer"
+            sids:
+              - "student1"
+              - "student2"
+              # - "authenticated"  # à éviter sauf démo
+
+          - role: "developer"
+            sids:
+              - "devuser1"
+              - "devuser2"
+
+          - role: "viewer_github_org_team"
+            sids:
+              - "bilonjea"
+              - "bilonjeavps"
+              - "group:ynov/masters1"
+              - "group:e-metconsulting/team1"

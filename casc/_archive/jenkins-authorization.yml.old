@@ -1,0 +1,46 @@
+jenkins:
+    # RBAC simple : admin total pour l'utilisateur admin
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: "admins"
+            permissions: [ "Overall/Administer" ]
+            assignments: [ "${JENKINS_ADMIN_ID}" ]
+
+          # a surtout éviter pour anonymous
+          - name: "public-view"
+            permissions: [ "Overall/Read", "View/Read" ]
+            assignments: [ "anonymous" ]
+
+          - name: "viewer"
+            permissions:
+              - "Overall/Read"
+              - "View/Read"
+              - "Job/Read"
+            assignments:
+              - "student1"
+              - "student2"
+              #- authenticated # use only on demo because give access to all authenticated user
+
+          - name: "developer"
+            permissions:
+              - "Overall/Read"
+              - "View/Read"
+              - "Job/Read"
+              - "Job/Discover"
+              - "Job/Build"
+              - "Job/Cancel"
+              - "Job/Workspace"
+            assignments:
+              - "devuser1"
+              - "devuser2"
+          
+          # exemple avec un utilisateurs/groupe/équipe GitHub (plugin GitHub Authentication)
+          - name: "viewer_github_org_team"
+            permissions: [ "Overall/Read", "View/Read", "Job/Read", "Job/Discover" ]
+            assignments:
+              - "bilonjea" # ils possible de l'assigner les droits developer
+              - "bilonjeavps"
+              - "group:ynov/masters1"
+              - "group:e-metconsulting/team1"

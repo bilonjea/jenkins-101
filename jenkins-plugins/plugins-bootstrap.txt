@@ -3,18 +3,23 @@ workflow-aggregator
 pipeline-stage-view
 pipeline-utility-steps
 
+# --- Shared Libraries ---
+workflow-cps-global-lib                  # (Pipeline: Shared Groovy Libraries) ← indispensable
+
 # --- SCM intégration ---
 git
 git-client
 github
 github-branch-source
 branch-api
+scm-api
 
 # --- Credentials / Sécurité ---
 credentials
 credentials-binding
 plain-credentials
 ssh-credentials
+ssh-agent
 role-strategy                             # RBAC (droits par rôles)
 matrix-auth                               # (option) stratégie matricielle
 
@@ -25,19 +30,20 @@ durable-task
 
 # --- Qualité & analyse ---
 warnings-ng
-checkstyle
-pmd
-spotbugs
+#checkstyle
+#pmd
+#spotbugs
 jacoco
+junit
 
 # --- SonarQube (optionnel) ---
 sonar
 sonar-quality-gates                        # Qualité front (optionnel selon projet)
-eslint
+#eslint
 
 # --- Artefacts / Registry ---
 nexus-artifact-uploader
-jfrog-artifactory                          # (optionnel si tu veux JFrog au lieu de Nexus)
+artifactory                                # (optionnel si tu veux JFrog au lieu de Nexus)
 
 # --- Notifications / Collaboration ---
 mailer
@@ -65,4 +71,12 @@ ansicolor
 
 # --- UI / Utilitaires ---
 blueocean
+ws-cleanup
+build-timeout
+ant
 
+# --- Optional ---
+#pipeline-github-lib
+#pipeline-graph-view
+#ldap
+#dark-theme

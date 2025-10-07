@@ -7,18 +7,27 @@ services:
     ports:
       - "8080:8080"     # UI
       - "50000:50000"   # Agents JNLP
+    #restart: unless-stopped
     env_file: .env
     environment:
       - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/
       - JENKINS_URL=${JENKINS_URL:-http://localhost:8080/}
-
+      - TZ=Europe/Paris
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      
     volumes:
       - jenkins_home:/var/jenkins_home
       - ./casc/:/var/jenkins_home/casc_configs/:ro
       - ./casc_jobs/:/var/jenkins_home/casc_jobs/:ro
-      - /var/run/docker.sock:/var/run/docker.sock   # ⚠️ privilèges élevés
+      - /var/run/docker.sock:/var/run/docker.sock   # privilèges élevés
     # (Option) mappe l'UID/GID pour l'accès au socket
     # user: "1000:${DOCKER_GID}"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
 
 volumes:
   jenkins_home:
