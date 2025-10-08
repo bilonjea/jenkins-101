@@ -6,13 +6,14 @@ services:
       dockerfile: Dockerfile
     #container_name: agent-inbound
     restart: unless-stopped
-    env_file: .env
+    #env_file: .env
     environment:
       JENKINS_URL:        ${JENKINS_URL}
       JENKINS_AGENT_NAME: ${JENKINS_AGENT_NAME}
       JENKINS_SECRET:     ${JENKINS_SECRET}
       JENKINS_WEB_SOCKET: ${JENKINS_WEB_SOCKET:-true}
-      JENKINS_AGENT_WORKDIR: ${JENKINS_AGENT_WORKDIR:-/home/jenkins}
+      JENKINS_AGENT_WORKDIR: ${JENKINS_AGENT_WORKDIR}
+    user: "root" # Pour pouvoir monter le socket docker
     volumes:
       # Monte le socket Docker SI tu veux faire docker build/run depuis l’agent
       - /var/run/docker.sock:/var/run/docker.sock
@@ -21,7 +22,15 @@ services:
       # - m2-cache:/home/jenkins/.m2
     # Si tu as besoin d’aligner le GID docker du host, décommente:
     # user: "1000:${DOCKER_GID}"
+    networks:
+      - jenkins-net
+
 
 #volumes:
 #  agent-cache:
 #  m2-cache:
+
+networks:
+  jenkins-net:
+    external: true
+

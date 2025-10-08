@@ -14,7 +14,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
       ca-certificates curl gnupg lsb-release \
-      git openssh-client \
+      git openssh-client netcat-openbsd \
     ; \
     install -m 0755 -d /etc/apt/keyrings; \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg; \

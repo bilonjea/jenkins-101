@@ -15,7 +15,10 @@ services:
       - TZ=Europe/Paris
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-      
+      - IP_DU_HOST_AGENT=${IP_DU_HOST_AGENT}   # (WSL/Windows)
+      - AGENT_SSH_PORT=${AGENT_SSH_PORT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - jenkins_home:/var/jenkins_home
       - ./casc/:/var/jenkins_home/casc_configs/:ro
@@ -28,6 +31,13 @@ services:
       interval: 30s
       timeout: 5s
       retries: 10
+    networks:
+      - jenkins-net
 
 volumes:
   jenkins_home:
+
+
+networks:
+  jenkins-net:
+    external: true

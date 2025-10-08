@@ -1,10 +1,10 @@
-# Agent Jenkins contrôlé en SSH (serveur sshd inclus) + JDK 21
+# Agent Jenkins contrôlé en SSH (sshd inclus) + JDK 21
 FROM jenkins/ssh-agent:latest-jdk21
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Outils système + Docker CLI (buildx/compose) en une seule couche
+# Outils système + Docker CLI (buildx/compose)
 RUN set -eux; \
   apt-get update; \
   apt-get install -y --no-install-recommends \
@@ -38,10 +38,24 @@ RUN set -eux; \
   npm i -g @angular/cli@${ANGULAR_CLI_VERSION}; \
   rm -rf /var/lib/apt/lists/*
 
-# (Option) mapper le GID 'docker' du host si tu montes /var/run/docker.sock
-# RUN groupadd -g 998 docker && usermod -aG docker jenkins
+# --- SSH: injection de la clé publique & durcissement minimal ---
+# Reçoit la clé publique via ARG au build
+ARG JENKINS_AGENT_SSH_PUBKEY
+# Crée le .ssh, injecte la pubkey et fixe les droits
+RUN set -eux; \
+  install -d -m 0700 /home/jenkins/.ssh; \
+  if [ -n "${JENKINS_AGENT_SSH_PUBKEY:-}" ]; then \
+    printf '%s\n' "${JENKINS_AGENT_SSH_PUBKEY}" > /home/jenkins/.ssh/authorized_keys; \
+  fi; \
+  chown -R jenkins:jenkins /home/jenkins/.ssh; \
+  chmod 0600 /home/jenkins/.ssh/authorized_keys || true; \
+  install -d -m 0755 /var/run/sshd; \
+  printf "PasswordAuthentication no\nPubkeyAuthentication yes\nPermitRootLogin no\nUsePAM yes\n" \
+    > /etc/ssh/sshd_config.d/jenkins.conf
 
-USER jenkins
 
 # Labels de l’agent (ciblage dans les pipelines)
 ENV JENKINS_AGENT_LABELS="build docker java21 maven node angular"
+
+EXPOSE 22
+# l’image jenkins/ssh-agent démarre déjà sshd en entrée; on laisse l’ENTRYPOINT/CMD du parent
