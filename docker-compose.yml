@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"     # UI
       - "50000:50000"   # Agents JNLP
-    #restart: unless-stopped
+    restart: unless-stopped
     env_file: .env
     environment:
       - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/
