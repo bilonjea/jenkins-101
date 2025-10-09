@@ -1,3 +1,83 @@
+COMPOSE_DOCKER_CLI_BUILD=1
+
+## .env.test
+
+# Admin Jenkins
+JENKINS_ADMIN_ID=admin
+JENKINS_ADMIN_PASSWORD=admin
+JENKINS_URL=http://localhost:8080/
+ADMIN_EMAIL=replace@replace
+
+
+# DOCKER_GID=997   # (ex sur Debian; mieux: calcule-le)
+
+# GitHub (au choix PAT ou App)
+GITHUB_USER=replace
+GITHUB_PAT=replace
+GITHUB_CLIENT_SECRET=replace
+GITHUB_CLIENT_ID=replace
+
+# DockerHub (si utilisé)
+DOCKERHUB_USER=replace
+DOCKERHUB_PAT=replace
+
+# SonarQube (si utilisé)
+SONAR_TOKEN=replace
+SONAR_URL=https://sonarcloud.io
+
+# eMail (si notifications par email)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USE_SSL=false
+SMTP_USE_TLS=true
+SMTP_USER=replace@gmail.com
+SMTP_PASS=replace
+
+#SLACK_BOT_TOKEN=replace
+#SLACK_TEAM_ID=replace
+
+# Users for demo (dev and students)
+DEVUSER1_PASS=devuser1
+DEVUSER2_PASS=devuser2
+STUDENT1_PASS=student1
+STUDENT2_PASS=student2
+BILONJEA_PASS=bilonjea
+
+
+# Jenkins Agents ssh (si utilisés)
+AGENT_SSH_PORT=2222
+
+ #host.docker.internal
+IP_DU_HOST_AGENT=host.docker.internal    
+
+
+
+
+
+## Commande docker
+```
+docker network create jenkins-net
+docker network ls
+docker compose --env-file .env.prd up -d --build
+docker compose logs --no-log-prefix jenkins | tail -n 200
+docker compose logs -f jenkins
+
+docker exec -it jenkins bash
+docker exec -u 0 -it jenkins bash
+
+
+docker compose --env-file .env up -d --force-recreate jenkins
+docker rm --force $(docker ps -a -q)
+
+docker compose down
+docker volume ls | grep jenkins-101_jenkins_home
+docker volume rm jenkins-101_jenkins_home   # supprime le volume nommé
+sudo ls -la /var/lib/docker/volumes/jenkins-101_jenkins_home/_data
+
+docker system prune -a --volumes
+docker image prune -a
+docker volume prune
+```
 
 ## YouTube Link
 For the full 1 hour course watch on youtube:
