@@ -14,3 +14,5 @@ Thumbs.db
 *.env.local
 .env.*.local
 .env.prod
+.env.agent1
+.env.agent2
