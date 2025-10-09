@@ -23,6 +23,12 @@ jenkins:
         numExecutors: 2
         launcher: { inbound: { webSocket: true } }
     - permanent:
+        name: "agent-inbound-4"
+        labelString: "docker docker-4"
+        remoteFS: "/home/jenkins"
+        numExecutors: 2
+        launcher: { inbound: { webSocket: true } }
+    - permanent:
         name: "agent-ssh-1"
         labelString: "docker docker-3"
         remoteFS: "/home/jenkins"
