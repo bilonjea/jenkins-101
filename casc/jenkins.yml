@@ -13,33 +13,33 @@ jenkins:
     - permanent:
         name: "agent-inbound-1"
         labelString: "docker docker-1"
-        remoteFS: "/home/jenkins"
+        remoteFS: "/home/jenkins/agent1"
         numExecutors: 2
         launcher: { inbound: { webSocket: true } }
     - permanent:
         name: "agent-inbound-2"
         labelString: "docker docker-2"
-        remoteFS: "/home/jenkins"
+        remoteFS: "/home/jenkins/agent2"
         numExecutors: 2
         launcher: { inbound: { webSocket: true } }
     - permanent:
         name: "agent-inbound-4"
         labelString: "docker docker-4"
-        remoteFS: "/home/jenkins"
+        remoteFS: "/home/jenkins/agent4"
         numExecutors: 2
         launcher: { inbound: { webSocket: true } }
-    - permanent:
-        name: "agent-ssh-1"
-        labelString: "docker docker-3"
-        remoteFS: "/home/jenkins"
-        numExecutors: 2
-        launcher:
-          ssh:
-            host: "${IP_DU_HOST_AGENT}"     # ou hostname si résolu
-            port: "${AGENT_SSH_PORT}"       # 2222 par défaut
-            credentialsId: "agent-ssh-key"
-            sshHostKeyVerificationStrategy:
-              nonVerifyingKeyVerificationStrategy: {}  # pour tests (sinon mets une stratégie stricte)
+#    - permanent:
+#        name: "agent-ssh-1"
+#        labelString: "docker docker-3"
+#        remoteFS: "/home/jenkins"
+#        numExecutors: 2
+#        launcher:
+#          ssh:
+#            host: "${IP_DU_HOST_AGENT}"     # ou hostname si résolu
+#            port: "${AGENT_SSH_PORT}"       # 2222 par défaut
+#            credentialsId: "agent-ssh-key"
+#            sshHostKeyVerificationStrategy:
+#              nonVerifyingKeyVerificationStrategy: {}  # pour tests (sinon mets une stratégie stricte)
 
 # Configuration des plugins
 # (à adapter selon les plugins installés)
@@ -87,6 +87,6 @@ unclassified:
 
 #jobs:
 # Active la/les définitions Job DSL
-# - file: /var/jenkins_home/casc_jobs/cargo-tms.groovy
-# - file: /var/jenkins_home/casc_jobs/mbp_github.groovy
+ #- file: /var/jenkins_home/casc_jobs/cargo-tms.groovy
+ #- file: /var/jenkins_home/casc_jobs/demojhipster-pipeline.groovy
 # - file: /var/jenkins_home/casc_jobs/mbp_gitlab.groovy   # décommente si GitLab

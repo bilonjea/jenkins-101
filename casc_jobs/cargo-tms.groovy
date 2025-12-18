@@ -1,31 +1,22 @@
 multibranchPipelineJob("cargo-tms") {
     displayName("Cargo TMS Pipeline")
     description("Multibranch pipeline for cargo-tms repository")
-    
+
     branchSources {
         branchSource {
             source {
                 github {
-                    id('gh-cargo')  // ID unique pour cette source
+                    id('gh-cargo')
                     repositoryUrl('https://github.com/bilonjea/cargo-tms')
                     configuredByUrl(true)
-                    // credentialsId('gh-pat') // Décommentez si dépôt privé
+                    // credentialsId('gh-pat') // Décommentez si privé
                     traits {
-                        gitHubBranchDiscovery {
-                            strategyId(1) // Découvre seulement les branches
-                        }
-                        gitHubPullRequestDiscovery {
-                            strategyId(1) // Découvre les PR depuis la branche source
-                        }
-                        gitHubForkDiscovery {
-                            strategyId(1) // Découvre les PR depuis les forks
-                            trust('Permission')
-                        }
-                        cleanBeforeCheckoutTrait() // Nettoie le workspace avant checkout
-                        cleanAfterCheckoutTrait() // Nettoie après checkout
+                        gitHubBranchDiscovery { strategyId(1) }
+                        cleanBeforeCheckoutTrait()
+                        cleanAfterCheckoutTrait()
                         cloneOptionTrait {
                             extension {
-                                shallow(true) // Clone shallow pour plus de rapidité
+                                shallow(true)
                                 depth(1)
                                 timeout(10)
                                 noTags(true)
@@ -34,57 +25,25 @@ multibranchPipelineJob("cargo-tms") {
                     }
                 }
             }
-            strategy {
-                defaultBranchPropertyStrategy {
-                    props {
-                        // Pas de propriétés supplémentaires pour l'instant
-                    }
-                }
-            }
         }
     }
-    
+
     factory {
         workflowBranchProjectFactory {
-            scriptPath('Jenkinsfile') // Chemin vers le Jenkinsfile dans le repo
+            scriptPath('Jenkinsfile')
         }
     }
-    
+
     orphanedItemStrategy {
         discardOldItems {
-            numToKeep(10) // Garde les 10 dernières builds
-            daysToKeep(-1) // Pas de limite en jours
+            numToKeep(10)
+            daysToKeep(-1)
         }
     }
-    
+
     triggers {
         periodicFolderTrigger {
-            interval('1d') // Scan quotidien du repository
-        }
-    }
-    
-    properties {
-        folderCredentialsProperty {
-            domainCredentials {
-                domainCredentials {
-                    domain {
-                        name('')
-                        description('')
-                    }
-                    credentials {
-                        // Ajoutez ici les credentials si nécessaires
-                    }
-                }
-            }
-        }
-    }
-    
-    configure { project ->
-        project / 'sources' / 'data' / 'jenkins.branch.BranchSource' / 'source' / 'traits' {
-            'jenkins.scm.impl.trait.WildcardSCMHeadFilterTrait' {
-                includes('*') // Inclut toutes les branches
-                excludes('')  // N'exclut aucune branche
-            }
+            interval('2m') // Scan toutes les 2 minutes
         }
     }
 }

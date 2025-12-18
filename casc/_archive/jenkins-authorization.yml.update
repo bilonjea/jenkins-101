@@ -10,13 +10,13 @@ jenkins:
             entries:
               - user: "${JENKINS_ADMIN_ID}"
               - user: "bilonjea"
-          #- name: "public-view"
-           # description: "Public View"
-           # permissions:
-          ##    - "Overall/Read"
-          #    - "View/Read"
-          #  entries:
-          #    - user: "anonymous"
+          - name: "public-view"
+            description: "Public View"
+            permissions: []
+              #- "Overall/Read"
+              #- "View/Read"
+            entries:
+              - user: "anonymous"
           - name: "viewer"
             description: "Viewers"
             permissions:
@@ -31,7 +31,7 @@ jenkins:
             permissions:
               - "Overall/Read"
               - "View/Read"
-              - "Job/Create"
+              #- "Job/Create"
               - "Job/Read"
               - "Job/Discover"
               - "Job/Build"

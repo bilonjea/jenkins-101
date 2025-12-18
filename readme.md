@@ -69,4 +69,6 @@ docker volume ls                                   # voir les volumes existant
 ```
 docker compose --env-file .env.agent1 -p agent1 up -d --build                         # appliquer la racine du fichier docker-compose.yml
 docker compose --env-file .env.agent2 -p agent2 up -d --build                         # appliquer la racine du fichier docker-compose.yml
+
+docker compose --env-file .env.agent4 -p agent4 up -d --build  
 ```
