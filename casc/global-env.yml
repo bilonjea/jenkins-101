@@ -1,0 +1,14 @@
+jenkins:
+  globalNodeProperties:
+    - envVars:
+        env:
+          - key: APP_ENV
+            value: dev
+          - key: DOCKER_REGISTRY            # nom du registre (CLI)
+            value: docker.io
+          - key: DOCKER_REGISTRY_API        # endpoint d'auth si nécessaire
+            value: https://index.docker.io/v1/
+          - key: DOCKER_REPO_JENKINS_AGENT  # ton repo
+            value: bilonjea/jenkins-agent
+          - key: DEFAULT_TAG
+            value: inbound

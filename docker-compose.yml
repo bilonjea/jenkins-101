@@ -26,6 +26,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock   # privilèges élevés
     # (Option) mappe l'UID/GID pour l'accès au socket
     # user: "1000:${DOCKER_GID}"
+    group_add:
+      - "989" # stat -c %g /var/run/docker.sock ou ls -ln /var/run/docker.sock
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/login"]
       interval: 30s

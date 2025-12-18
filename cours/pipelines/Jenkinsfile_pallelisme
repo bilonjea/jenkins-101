@@ -1,0 +1,27 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Setup 1') {
+      steps { echo 'Setup 1...' }
+    }
+    stage('Setup 2') {
+      steps { echo 'Setup 2...' }
+    }
+
+    stage('Parallel Jobs') {
+      parallel {
+        stage('Build A') { steps { echo 'Build A' } }
+        stage('Build B') { steps { echo 'Build B' } }
+        stage('Build C') { steps { echo 'Build C' } }
+      }
+    }
+
+    stage('Package') {
+      steps { echo 'Packaging...' }
+    }
+    stage('Deploy') {
+      steps { echo 'Deploying...' }
+    }
+  }
+}

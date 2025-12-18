@@ -1,0 +1,181 @@
+pipeline {
+  agent none
+  options { skipDefaultCheckout(true); timestamps() }
+
+  environment {
+    MVN_FLAGS = "-B -Dmaven.repo.local=${WORKSPACE}/.m2"
+
+    IMAGE_REPO = "bilonjea/tms"           // à adapter
+    IMAGE_TAG  = "build-${BUILD_NUMBER}"
+
+    TMS_JAR    = "tms/target/*.jar"       // jar principal du service
+
+    JFROG_URL  = "https://<your-artifactory>"   // à adapter
+    JFROG_REPO = "libs-snapshot-local"          // à adapter
+  }
+
+  stages {
+    stage('Checkout') {
+      agent { label 'agent1' }
+      steps {
+        checkout scm
+        stash name: 'src', includes: '**/*', useDefaultExcludes: false
+      }
+    }
+
+    stage('Builds parallèles (frontend, contracts-api, tms-sb-admin)') {
+      parallel {
+        stage('frontend (agent1)') {
+          agent { label 'agent1' }
+          steps {
+            unstash 'src'
+            sh '''
+              corepack enable || true
+              corepack prepare pnpm@latest --activate
+              cd frontend
+              pnpm i
+              pnpm build
+            '''
+          }
+        }
+        stage('contracts-api (agent1)') {
+          agent { label 'agent1' }
+          steps {
+            unstash 'src'
+            sh "mvn ${MVN_FLAGS} -pl contracts-api -am -DskipTests install"
+          }
+        }
+        stage('tms-sb-admin (agent2)') {
+          agent { label 'agent2' }
+          steps {
+            unstash 'src'
+            sh "mvn ${MVN_FLAGS} -pl tms-sb-admin -am -DskipTests package"
+          }
+        }
+      }
+    }
+
+    stage('Build tms (agent1)') {
+      agent { label 'agent1' }
+      steps {
+        unstash 'src'
+        sh "mvn ${MVN_FLAGS} -U -pl tms -am verify"
+        stash name: 'tms-jar', includes: "${TMS_JAR}", useDefaultExcludes: false
+      }
+    }
+
+    stage('Tests & Analysis (tms)') {
+      agent { label 'agent1' }
+      environment {
+        SONAR_TOKEN = credentials('sonar-token') // ← crée cet ID côté Credentials
+      }
+      steps {
+        sh """
+          # Tests
+          mvn ${MVN_FLAGS} -pl tms -am test
+
+          # Sonar (SonarCloud — adapte les props; pour SonarQube, mets sonar.host.url interne)
+          mvn ${MVN_FLAGS} -pl tms -am sonar:sonar \
+            -Dsonar.login=${SONAR_TOKEN} \
+            -Dsonar.projectKey=<projectKey> \
+            -Dsonar.organization=<org> \
+            -Dsonar.host.url=https://sonarcloud.io
+        """
+      }
+      post {
+        always {
+          junit testResults: 'tms/target/surefire-reports/*.xml', allowEmptyResults: true
+          recordIssues enabledForFailure: true, tools: [java(), mavenConsole()]  // Warnings NG
+        }
+      }
+    }
+
+    stage('Archive artifacts (affichage Jenkins)') {
+      agent any
+      steps {
+        // archive ce qui existe sans casser le build si absent
+        archiveArtifacts artifacts: """
+          contracts-api/target/*.jar,
+          tms/target/*.jar,
+          tms-service/target/*.jar,
+          tms-db/target/*.jar,
+          tms-sb-admin/target/*.jar
+        """.trim().replaceAll("\\s+",""), fingerprint: true, onlyIfSuccessful: true, allowEmptyArchive: true
+      }
+    }
+
+    stage('Dockerize (agent1)') {
+      agent { label 'agent1' }
+      steps {
+        sh '''
+          # Dockerfile généré si absent
+          cat > tms/Dockerfile <<'EOF'
+          FROM eclipse-temurin:21-jre
+          WORKDIR /app
+          COPY target/*.jar app.jar
+          EXPOSE 8080
+          ENTRYPOINT ["java","-jar","/app/app.jar"]
+          EOF
+
+          docker build -t ${IMAGE_REPO}:${IMAGE_TAG} -t ${IMAGE_REPO}:latest tms
+        '''
+      }
+    }
+
+    stage('Déploiements parallèles') {
+      parallel {
+        stage('Push image (agent1)') {
+          agent { label 'agent1' }
+          environment {
+            DOCKERHUB_USER = credentials('dockerhub-user')
+            DOCKERHUB_PWD  = credentials('dockerhub-pwd')
+          }
+          steps {
+            sh '''
+              echo "$DOCKERHUB_PWD" | docker login -u "$DOCKERHUB_USER" --password-stdin
+              docker push ${IMAGE_REPO}:${IMAGE_TAG}
+              docker push ${IMAGE_REPO}:latest
+            '''
+          }
+        }
+
+        stage('Upload JAR → JFrog (any)') {
+          agent any
+          steps {
+            unstash 'tms-jar'
+            withCredentials([usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'JF_USER', passwordVariable: 'JF_PASS')]) {
+              sh '''
+                FILE=$(ls -1 ''' + "${TMS_JAR}" + ''' | head -n1)
+                DEST="${JFROG_URL}/artifactory/''' + "${JFROG_REPO}" + '''/tms/${BUILD_NUMBER}/$(basename "$FILE")"
+                curl -sSf -u "${JF_USER}:${JF_PASS}" -T "$FILE" "$DEST"
+              '''
+            }
+          }
+        }
+
+        stage('Deploy VM (any)') {
+          agent any
+          steps {
+            unstash 'tms-jar'
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'KEY', usernameVariable: 'USER')]) {
+              sh '''
+                HOST=<vm_ip_or_dns>   # adapte
+                FILE=$(ls -1 ''' + "${TMS_JAR}" + ''' | head -n1)
+                scp -i "$KEY" -o StrictHostKeyChecking=no "$FILE" "${USER}@${HOST}:/opt/tms/tms.jar"
+                ssh -i "$KEY" -o StrictHostKeyChecking=no "${USER}@${HOST}" '
+                  sudo systemctl stop tms || true
+                  sudo systemctl start tms || nohup java -jar /opt/tms/tms.jar --spring.profiles.active=prod >/var/log/tms.log 2>&1 &
+                '
+              '''
+            }
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success { echo "✔ Build #${BUILD_NUMBER} OK" }
+    always  { cleanWs(deleteDirs: true, notFailBuild: true) }
+  }
+}

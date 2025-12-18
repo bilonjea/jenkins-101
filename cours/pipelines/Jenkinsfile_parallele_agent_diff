@@ -1,0 +1,43 @@
+pipeline {
+  agent none
+
+  stages {
+    // 2 stages séquentiels sur n'importe quel agent
+    stage('Setup 1') {
+      agent any
+      steps { echo 'Setup 1...' }
+    }
+    stage('Setup 2') {
+      agent any
+      steps { echo 'Setup 2...' }
+    }
+
+    // 3 stages en parallèle sur agent1, agent2, agent3
+    stage('Parallel Jobs') {
+      parallel {
+        stage('Build A') {
+          agent { label 'agent1' }
+          steps { echo 'Build A sur agent1' }
+        }
+        stage('Build B') {
+          agent { label 'agent2' }
+          steps { echo 'Build B sur agent2' }
+        }
+        stage('Build C') {
+          agent { label 'agent3' }
+          steps { echo 'Build C sur agent3' }
+        }
+      }
+    }
+
+    // 2 stages séquentiels finaux sur agent1
+    stage('Package') {
+      agent { label 'agent1' }
+      steps { echo 'Packaging sur agent1...' }
+    }
+    stage('Deploy') {
+      agent { label 'agent1' }
+      steps { echo 'Deploy sur agent1...' }
+    }
+  }
+}

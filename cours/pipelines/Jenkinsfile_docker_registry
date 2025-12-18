@@ -1,0 +1,34 @@
+pipeline {
+  agent { label 'agen5' }
+
+  environment {
+    DOCKERHUB_USER = credentials('dockerhub-user') // id Jenkins Credentials
+    DOCKERHUB_PWD  = credentials('dockerhub-pwd')
+  }
+
+  stages {
+    stage('Build') {
+      steps {
+        sh '''
+          set -e
+          REPO="${DOCKER_REPO_JENKINS_AGENT}"
+          TAG="${DEFAULT_TAG:-latest}"
+
+          docker build -t "${REPO}:${TAG}" jenkins-agent/inbound
+        '''
+      }
+    }
+    stage('Push') {
+      steps {
+        sh '''
+          set -e
+          REPO="${DOCKER_REPO_JENKINS_AGENT}"
+          TAG="${DEFAULT_TAG:-latest}"
+
+          echo "$DOCKERHUB_PWD" | docker login -u "$DOCKERHUB_USER" --password-stdin "${DOCKER_REGISTRY}"
+          docker push "${REPO}:${TAG}"
+        '''
+      }
+    }
+  }
+}
