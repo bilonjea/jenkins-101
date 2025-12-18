@@ -2,6 +2,11 @@ pipelineJob('cargo-tms-pipeline') {
     displayName('Cargo TMS Pipeline')
     description('Pipeline simple pour le projet Cargo TMS')
 
+    // Scrutation SCM toutes les minutes
+    triggers {
+        scm('H/1 * * * *')
+    }
+
     definition {
         cpsScm {
             scm {
