@@ -88,5 +88,4 @@ unclassified:
 jobs:
 # Active la/les définitions Job DSL
  - file: /var/jenkins_home/casc_jobs/cargo-tms-freestyle.groovy
- #- file: /var/jenkins_home/casc_jobs/demojhipster-pipeline.groovy.lock
-# - file: /var/jenkins_home/casc_jobs/mbp_gitlab.groovy.lock   # décommente si GitLab
+ - file: /var/jenkins_home/casc_jobs/cargo-tms-pipeline.groovy
