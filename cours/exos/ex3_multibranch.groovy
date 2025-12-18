@@ -1,4 +1,4 @@
-multibranchPipelineJob("cargo-tms") {
+multibranchPipelineJob("cargo-tms-multibranch") {
     displayName("Cargo TMS Pipeline")
     description("Multibranch pipeline for cargo-tms repository")
 
@@ -42,8 +42,9 @@ multibranchPipelineJob("cargo-tms") {
     }
 
     triggers {
+        // Scan toutes les 2 minutes (pour simuler un déclenchement rapide)
         periodicFolderTrigger {
-            interval('2m') // Scan toutes les 2 minutes
+            interval('2m')
         }
     }
 }

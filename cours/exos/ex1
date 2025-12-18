@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build contracts-api') {
+            steps {
+                dir('contracts-api') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        stage('Build tms-service') {
+            steps {
+                dir('tms/tms-service') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        stage('Build tms-db') {
+            steps {
+                dir('tms/tms-db') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        stage('Build tms-sb-admin') {
+            steps {
+                dir('tms-sb-admin') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+        }
+    }
+}

@@ -12,9 +12,7 @@ jenkins:
               - user: "bilonjea"
           - name: "public-view"
             description: "Public View"
-            permissions:
-              - "Overall/Read"
-              - "View/Read"
+            permissions: []
             entries:
               - user: "anonymous"
           - name: "viewer"
@@ -33,6 +31,7 @@ jenkins:
               - "View/Read"
               - "Job/Read"
               - "Job/Discover"
+              - "Job/Create"
               - "Job/Build"
               - "Job/Cancel"
               - "Job/Workspace"
