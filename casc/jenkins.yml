@@ -85,8 +85,8 @@ unclassified:
         serverUrl: "${SONAR_URL}"
         credentialsId: "sonar-token"
 
-#jobs:
+jobs:
 # Active la/les définitions Job DSL
- #- file: /var/jenkins_home/casc_jobs/cargo-tms.groovy
- #- file: /var/jenkins_home/casc_jobs/demojhipster-pipeline.groovy
-# - file: /var/jenkins_home/casc_jobs/mbp_gitlab.groovy   # décommente si GitLab
+ - file: /var/jenkins_home/casc_jobs/cargo-tms-freestyle.groovy
+ #- file: /var/jenkins_home/casc_jobs/demojhipster-pipeline.groovy.lock
+# - file: /var/jenkins_home/casc_jobs/mbp_gitlab.groovy.lock   # décommente si GitLab
