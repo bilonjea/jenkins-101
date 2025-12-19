@@ -89,3 +89,5 @@ jobs:
 # Active la/les définitions Job DSL
  - file: /var/jenkins_home/casc_jobs/cargo-tms-freestyle.groovy
  - file: /var/jenkins_home/casc_jobs/cargo-tms-pipeline.groovy
+ - file: /var/jenkins_home/casc_jobs/cargo-tms-multibranch.groovy
+ - file: /var/jenkins_home/casc_jobs/cargo-tms-multibranch-github.groovy

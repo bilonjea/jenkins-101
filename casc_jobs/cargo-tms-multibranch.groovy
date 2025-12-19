@@ -1,0 +1,37 @@
+multibranchPipelineJob("cargo-tms-multibranch") {
+    displayName("Cargo TMS Multibranch Pipeline")
+    description("Multibranch pipeline for cargo-tms repository")
+
+    branchSources {
+        branchSource {
+            source {
+                git {
+                    remote("https://github.com/bilonjea/cargo-tms.git")
+                    // credentialsId('gh-pat') // Décommente si privé
+                    traits {
+                        gitBranchDiscovery()
+                    }
+                }
+            }
+        }
+    }
+
+    factory {
+        workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+        }
+    }
+
+    orphanedItemStrategy {
+        discardOldItems {
+            numToKeep(10)
+            daysToKeep(-1)
+        }
+    }
+
+    triggers {
+        periodicFolderTrigger {
+            interval('2m') // Scan toutes les 2 minutes
+        }
+    }
+}

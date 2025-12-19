@@ -2,6 +2,11 @@ job('cargo-tms-freestyle') {
     displayName('Cargo TMS Freestyle')
     description('Job freestyle pour build contracts-api')
 
+    // Scrutation SCM toutes les minutes
+    triggers {
+        scm('H/1 * * * *')
+    }
+
     // Supprime le workspace avant le build
     wrappers {
         preBuildCleanup()
